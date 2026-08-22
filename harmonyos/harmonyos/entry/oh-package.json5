@@ -1,0 +1,9 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "智能体态分析入口模块",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {}
+}

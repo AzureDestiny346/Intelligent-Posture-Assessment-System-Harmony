@@ -1,0 +1,112 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "智能体态分析入口模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "智能体态分析"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "体态分析"
+    },
+    {
+      "name": "permission_internet_reason",
+      "value": "需要访问网络以进行体态分析"
+    },
+    {
+      "name": "permission_camera_reason",
+      "value": "需要使用相机拍摄体态照片"
+    },
+    {
+      "name": "permission_media_reason",
+      "value": "需要读取相册中的体态照片"
+    },
+    {
+      "name": "permission_write_media_reason",
+      "value": "需要保存压缩后的体态照片到临时目录"
+    },
+    {
+      "name": "permission_distributed_reason",
+      "value": "需要跨设备同步体态评估报告数据"
+    },
+    {
+      "name": "server_url",
+      "value": "http://10.207.40.229:5000"
+    },
+    {
+      "name": "app_slogan",
+      "value": "基于 AI 大模型的三视图体态评估系统"
+    },
+    {
+      "name": "btn_start_analysis",
+      "value": "开始分析"
+    },
+    {
+      "name": "btn_history",
+      "value": "历史记录"
+    },
+    {
+      "name": "btn_save",
+      "value": "保存"
+    },
+    {
+      "name": "btn_back",
+      "value": "返回"
+    },
+    {
+      "name": "tip_shooting_requirements",
+      "value": "全身入镜 · 身体站直 · 穿贴身衣物 · 光线充足"
+    },
+    {
+      "name": "label_front_view",
+      "value": "正面"
+    },
+    {
+      "name": "label_side_view",
+      "value": "侧面"
+    },
+    {
+      "name": "label_back_view",
+      "value": "背面"
+    },
+    {
+      "name": "msg_uploading",
+      "value": "正在上传照片..."
+    },
+    {
+      "name": "msg_analyzing",
+      "value": "AI 关键点检测中..."
+    },
+    {
+      "name": "msg_generating",
+      "value": "生成分析结果..."
+    },
+    {
+      "name": "msg_analysis_failed",
+      "value": "分析失败"
+    },
+    {
+      "name": "msg_network_error",
+      "value": "网络错误，请检查服务器是否运行"
+    },
+    {
+      "name": "msg_no_photos",
+      "value": "请先上传正面、侧面、背面三张照片"
+    },
+    {
+      "name": "msg_saved",
+      "value": "已保存"
+    },
+    {
+      "name": "msg_no_history",
+      "value": "暂无历史记录"
+    },
+    {
+      "name": "msg_confirm_clear",
+      "value": "确定要清空所有历史记录吗？此操作不可恢复。"
+    }
+  ]
+}

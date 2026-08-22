@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能体态分析</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --radius: 12px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.3);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --card: #1e293b;
+      --card-hover: #273549;
+      --bg: #0f172a;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      line-height: 1.6;
+    }
+
+    .page { max-width: 680px; margin: 0 auto; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: background 0.2s;
+    }
+
+    .card:hover { background: var(--card-hover); }
+
+    h1 {
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .tips {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--accent);
+      line-height: 1.8;
+    }
+
+    .tips strong { display: block; margin-bottom: 6px; }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 520px) {
+      .upload-grid { grid-template-columns: 1fr; }
+    }
+
+    .upload-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .upload-slot .title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .preview-box {
+      border: 2px dashed #475569;
+      border-radius: var(--radius);
+      height: 160px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: rgba(15, 23, 42, 0.5);
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+
+    .preview-box:hover {
+      border-color: var(--accent);
+      transform: scale(1.02);
+    }
+
+    .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-box .placeholder {
+      font-size: 13px;
+      color: #64748b;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .preview-box .placeholder svg {
+      display: block;
+      margin: 0 auto 8px;
+      opacity: 0.5;
+    }
+
+    .upload-slot input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 6px 14px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .file-label:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .file-label.has-file {
+      background: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--danger);
+      text-align: center;
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    .submit-wrap { text-align: center; margin-top: 16px; }
+
+    .submit-wrap button {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 48px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .submit-wrap button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+    }
+
+    .submit-wrap button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .loading-overlay.visible { display: flex; }
+
+    .loading-box {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      min-width: 300px;
+      box-shadow: var(--shadow);
+    }
+
+    .loading-spinner {
+      width: 56px;
+      height: 56px;
+      border: 4px solid rgba(56, 189, 248, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-steps {
+      list-style: none;
+      padding: 0;
+      margin: 20px 0 0;
+      text-align: left;
+    }
+
+    .loading-steps li {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .loading-steps li.active { color: var(--accent); font-weight: 600; }
+    .loading-steps li.done { color: var(--success); }
+
+    .loading-steps li .step-icon {
+      width: 20px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .retry-btn {
+      display: inline-block;
+      margin-top: 16px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 32px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .retry-btn:hover { transform: translateY(-2px); }
+
+    .share-bar {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .share-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .share-btn.copied {
+      background: rgba(52, 211, 153, 0.15);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+
+    .result-section { display: none; }
+    .result-section.visible { display: block; }
+
+    .block-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+    }
+
+    /* 评分圆环 */
+    .score-circle-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    .score-circle {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+
+    .score-circle svg {
+      transform: rotate(-90deg);
+    }
+
+    .score-circle .bg {
+      fill: none;
+      stroke: #334155;
+      stroke-width: 8;
+    }
+
+    .score-circle .progress {
+      fill: none;
+      stroke: url(#scoreGradient);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 408;
+      stroke-dashoffset: 408;
+      transition: stroke-dashoffset 1s ease-out;
+    }
+
+    .score-value {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-value .number {
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+    }
+
+    .score-value .unit {
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .score-desc {
+      margin-top: 16px;
+      font-size: 15px;
+      color: var(--muted);
+    }
+
+    .score-desc strong {
+      color: var(--accent);
+    }
+
+    /* 雷达图 */
+    .radar-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px 0;
+    }
+
+    #radarCanvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* 指标详情 */
+    .metrics-group {
+      margin-bottom: 16px;
+    }
+
+    .metrics-group:last-child { margin-bottom: 0; }
+
+    .metrics-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding-left: 4px;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .metric-row:last-child { margin-bottom: 0; }
+
+    .metric-row .label { color: var(--text); }
+
+    .tag {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tag-none { color: #34d399; background: rgba(52, 211, 153, 0.15); }
+    .tag-light { color: #fbbf24; background: rgba(251, 191, 36, 0.15); }
+    .tag-mid { color: #fb923c; background: rgba(251, 146, 60, 0.15); }
+    .tag-heavy { color: #f87171; background: rgba(248, 113, 113, 0.15); }
+    .tag-unknown { color: #64748b; background: rgba(100, 116, 139, 0.15); }
+
+    /* 运动处方 */
+    .exercise-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .exercise-item {
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      border-radius: var(--radius);
+      padding: 16px;
+      transition: all 0.2s;
+    }
+
+    .exercise-item:hover {
+      background: rgba(52, 211, 153, 0.12);
+      transform: translateX(4px);
+    }
+
+    .exercise-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .exercise-num {
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, #34d399, #22d3ee);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .exercise-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--success);
+    }
+
+    .exercise-desc {
+      font-size: 13px;
+      color: #a7f3d0;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+
+    .exercise-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .exercise-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .exercise-meta .label { color: #64748b; }
+    .exercise-meta .value { color: var(--text); font-weight: 600; }
+
+    /* AI建议 */
+    .advice-card {
+      background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(56, 189, 248, 0.1));
+      border: 1px solid rgba(129, 140, 248, 0.2);
+    }
+
+    .advice-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .advice-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .advice-item:last-child { border-bottom: none; }
+
+    .advice-num {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #818cf8, #38bdf8);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* 历史记录 */
+    .history-card {
+      background: rgba(30, 41, 59, 0.8);
+    }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .history-list {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .history-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .history-list::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 3px;
+    }
+
+    .history-list::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .history-item:hover {
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .history-item .time {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .history-item .score {
+      font-size: 18px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .clear-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: rgba(248, 113, 113, 0.15);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px;
+      font-size: 14px;
+    }
+
+    /* 动画 */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in { animation: fadeInUp 0.5s ease-out; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .pulse { animation: pulse 2s infinite; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="card">
+      <h1>智能体态分析</h1>
+      <p class="subtitle">三视图 AI 体态评估 · MVP</p>
+
+      <div class="tips">
+        <strong>拍摄要求</strong>
+        全身入镜 · 身体站直 · 穿贴身衣物 · 光线充足
+      </div>
+
+      <div class="upload-grid">
+        <div class="upload-slot">
+          <label class="title">正面照片</label>
+          <div class="preview-box" id="previewFront" onclick="document.getElementById('frontInput').click()">
+            <span class="placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 16V4M12 16L8 12M12 16L16 12M4 20H20"/>
+              </svg>
+              点击上传
+            </span>
+          </div>
+          <input type="file" id="frontInput" accept="image/*">
+          <label class="file-label" id="fileLabelFront" for="frontInput">选择文件</label>
+          <p class="hint" id="hintFront"></p>
+        </div>
+        <div class="upload-slot">
+          <label class="title">侧面照片</label>
+          <div class="preview-box" id="previewSide" onclick="document.getElementById('sideInput').click()">
+            <span class="placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 16V4M12 16L8 12M12 16L16 12M4 20H20"/>
+              </svg>
+              点击上传
+            </span>
+          </div>
+          <input type="file" id="sideInput" accept="image/*">
+          <label class="file-label" id="fileLabelSide" for="sideInput">选择文件</label>
+          <p class="hint" id="hintSide"></p>
+        </div>
+        <div class="upload-slot">
+          <label class="title">背面照片</label>
+          <div class="preview-box" id="previewBack" onclick="document.getElementById('backInput').click()">
+            <span class="placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 16V4M12 16L8 12M12 16L16 12M4 20H20"/>
+              </svg>
+              点击上传
+            </span>
+          </div>
+          <input type="file" id="backInput" accept="image/*">
+          <label class="file-label" id="fileLabelBack" for="backInput">选择文件</label>
+          <p class="hint" id="hintBack"></p>
+        </div>
+      </div>
+
+      <div class="submit-wrap">
+        <button id="submitBtn">开始分析</button>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loading">
+      <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <div style="font-size:18px;font-weight:600;color:var(--accent);">正在分析体态</div>
+        <ul class="loading-steps" id="loadingSteps">
+          <li id="stepCompress"><span class="step-icon">○</span>压缩图片</li>
+          <li id="stepUpload"><span class="step-icon">○</span>上传照片</li>
+          <li id="stepAnalyze"><span class="step-icon">○</span>AI关键点检测</li>
+          <li id="stepAdvice"><span class="step-icon">○</span>生成改善建议</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="result-section" id="results">
+      <!-- 整体评分 -->
+      <div class="card fade-in">
+        <div class="block-title">整体评分</div>
+        <div class="score-circle-wrap">
+          <div class="score-circle">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <defs>
+                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="100%" stop-color="#818cf8"/>
+                </linearGradient>
+              </defs>
+              <circle class="bg" cx="70" cy="70" r="65"/>
+              <circle class="progress" id="scoreProgress" cx="70" cy="70" r="65"/>
+            </svg>
+            <div class="score-value">
+              <div class="number" id="overallScore">0</div>
+              <div class="unit">分</div>
+            </div>
+          </div>
+          <div class="score-desc" id="scoreDesc"></div>
+        </div>
+      </div>
+
+      <!-- 雷达图 -->
+      <div class="card fade-in" style="animation-delay:0.1s">
+        <div class="block-title">体态评估雷达图</div>
+        <div class="radar-container">
+          <canvas id="radarCanvas" width="360" height="360"></canvas>
+        </div>
+      </div>
+
+      <!-- 指标详情 -->
+      <div class="card fade-in" style="animation-delay:0.15s">
+        <div class="block-title">指标详情</div>
+        <div id="metricsContainer"></div>
+      </div>
+
+      <!-- 运动处方 -->
+      <div class="card fade-in" style="animation-delay:0.2s">
+        <div class="block-title">体态运动处方</div>
+        <div class="exercise-list" id="exerciseList"></div>
+      </div>
+
+      <!-- AI建议 -->
+      <div class="card advice-card fade-in" style="animation-delay:0.25s">
+        <div class="block-title">AI改善建议</div>
+        <ol class="advice-list" id="adviceList"></ol>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="card fade-in" style="animation-delay:0.3s">
+        <div class="share-bar">
+          <button class="share-btn" id="copyBtn" title="复制分析摘要到剪贴板">复制摘要</button>
+          <button class="share-btn" id="downloadBtn" title="下载报告为图片">下载报告</button>
+          <button class="share-btn" id="retryBtn" title="重新分析">重新分析</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 历史记录 -->
+    <div class="card history-card" id="historyCard">
+      <div class="history-header">
+        <div class="block-title" style="margin-bottom:0;border:none;padding:0">历史记录</div>
+        <button class="clear-btn" id="clearHistoryBtn">清空</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="empty-msg">暂无历史记录</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 配置 ==========
+    const slots = {
+      front: { input: document.getElementById("frontInput"), preview: document.getElementById("previewFront"), hint: document.getElementById("hintFront"), label: "正面", fileLabel: document.getElementById("fileLabelFront") },
+      side: { input: document.getElementById("sideInput"), preview: document.getElementById("previewSide"), hint: document.getElementById("hintSide"), label: "侧面", fileLabel: document.getElementById("fileLabelSide") },
+      back: { input: document.getElementById("backInput"), preview: document.getElementById("previewBack"), hint: document.getElementById("hintBack"), label: "背面", fileLabel: document.getElementById("fileLabelBack") },
+    };
+
+    const submitBtn = document.getElementById("submitBtn");
+    const loading = document.getElementById("loading");
+    const results = document.getElementById("results");
+
+    let lastAnalysisData = null;
+
+    // 指标元数据
+    var METRIC_DEFS = [
+      { label: "高低肩", key: "high_low_shoulder" },
+      { label: "骨盆倾斜", key: "pelvic_tilt" },
+      { label: "头前伸", key: "forward_head" },
+      { label: "圆肩", key: "round_shoulder" },
+      { label: "脊柱侧弯趋势", key: "spinal_asymmetry" },
+    ];
+
+    // 运动处方预设
+    var EXERCISE_PRESETS = {
+      high_low_shoulder: [
+        { name: "肩部平衡拉伸", desc: "站立位，一手举过头顶向对侧弯曲，感受侧腰拉伸。", sets: "每侧3组", duration: "30秒/组" },
+        { name: "肩胛骨回缩训练", desc: "坐姿，双臂前伸，然后向后拉肩胛骨并夹紧。", sets: "3组", duration: "15次/组" },
+      ],
+      pelvic_tilt: [
+        { name: "骨盆时钟运动", desc: "仰卧屈膝，骨盆向前/后/左/右倾斜，像时钟指针一样运动。", sets: "3组", duration: "10次/组" },
+        { name: "臀桥训练", desc: "仰卧屈膝，抬起臀部至肩-膝成直线，保持。", sets: "3组", duration: "15次/组" },
+      ],
+      forward_head: [
+        { name: "颈部深层屈肌训练", desc: "仰卧，下巴微收，头部轻轻抬离地面，保持颈部稳定。", sets: "3组", duration: "10秒/次" },
+        { name: "胸椎伸展", desc: "坐姿，双手抱头，肘部向前，缓慢向后伸展胸椎。", sets: "3组", duration: "10次/组" },
+      ],
+      round_shoulder: [
+        { name: "门框胸部拉伸", desc: "站在门框前，手臂呈90度靠在门框上，身体前倾感受胸部拉伸。", sets: "每侧3组", duration: "30秒/组" },
+        { name: "YTWL训练", desc: "俯卧，手臂分别做Y、T、W、L形状，强化肩背肌群。", sets: "2组", duration: "8次/组" },
+      ],
+      spinal_asymmetry: [
+        { name: "猫牛式伸展", desc: "四足跪姿，交替做猫式（弓背）和牛式（塌腰），活动脊柱。", sets: "3组", duration: "10次/组" },
+        { name: "侧向伸展", desc: "站立，一手叉腰，另一手举过头顶向对侧弯曲。", sets: "每侧3组", duration: "15秒/组" },
+      ],
+    };
+
+    // ========== 图片压缩 ==========
+    const COMPRESS_MAX_SIZE = 1920;
+    const COMPRESS_QUALITY = 0.8;
+
+    function compressImage(file) {
+      return new Promise(function (resolve) {
+        if (file.size < 500 * 1024) { resolve(file); return; }
+        var img = new Image();
+        var url = URL.createObjectURL(file);
+        img.onload = function () {
+          var w = img.width, h = img.height;
+          if (w > COMPRESS_MAX_SIZE || h > COMPRESS_MAX_SIZE) {
+            var ratio = Math.min(COMPRESS_MAX_SIZE / w, COMPRESS_MAX_SIZE / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          var canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function (blob) {
+            URL.revokeObjectURL(url);
+            resolve(blob && blob.size < file.size
+              ? new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" })
+              : file);
+          }, "image/jpeg", COMPRESS_QUALITY);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+      });
+    }
+
+    // ========== 加载步骤动画 ==========
+    var stepIds = ["stepCompress", "stepUpload", "stepAnalyze", "stepAdvice"];
+
+    function resetSteps() {
+      stepIds.forEach(function (id) {
+        var el = document.getElementById(id);
+        el.className = "";
+        el.querySelector(".step-icon").textContent = "○";
+      });
+    }
+
+    function setStep(index, state) {
+      var el = document.getElementById(stepIds[index]);
+      if (state === "active") {
+        el.className = "active";
+        el.querySelector(".step-icon").textContent = "◎";
+      } else if (state === "done") {
+        el.className = "done";
+        el.querySelector(".step-icon").textContent = "●";
+      }
+    }
+
+    // ========== 预览 ==========
+    function setupPreview(key) {
+      var slot = slots[key];
+      slot.input.addEventListener("change", function () {
+        var file = slot.input.files[0];
+        if (!file) return;
+        if (slot._blobUrl) URL.revokeObjectURL(slot._blobUrl);
+        var url = URL.createObjectURL(file);
+        slot._blobUrl = url;
+        slot.preview.innerHTML = '<img src="' + url + '" alt="' + slot.label + '">';
+        slot.fileLabel.textContent = file.name.length > 12 ? file.name.slice(0, 10) + "..." : file.name;
+        slot.fileLabel.classList.add("has-file");
+        slot.hint.textContent = "";
+      });
+    }
+
+    setupPreview("front");
+    setupPreview("side");
+    setupPreview("back");
+
+    // ========== 雷达图 ==========
+    function drawRadarChart(metrics) {
+      var canvas = document.getElementById("radarCanvas");
+      var ctx = canvas.getContext("2d");
+      var centerX = canvas.width / 2;
+      var centerY = canvas.height / 2;
+      var radius = 120;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      var levels = 5;
+      var sides = metrics.length;
+
+      // 绘制渐变背景
+      for (var i = levels; i > 0; i--) {
+        var r = (radius / levels) * i;
+        ctx.beginPath();
+        for (var j = 0; j < sides; j++) {
+          var angle = (Math.PI * 2 / sides) * j - Math.PI / 2;
+          var x = centerX + r * Math.cos(angle);
+          var y = centerY + r * Math.sin(angle);
+          j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+
+        var gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
+        gradient.addColorStop(0, "rgba(56, 189, 248, 0.02)");
+        gradient.addColorStop(1, "rgba(56, 189, 248, 0.08)");
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 轴线
+      for (var j = 0; j < sides; j++) {
+        var angle = (Math.PI * 2 / sides) * j - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 数据区域（渐变填充）
+      ctx.beginPath();
+      for (var j = 0; j < sides; j++) {
+        var angle = (Math.PI * 2 / sides) * j - Math.PI / 2;
+        var value = metrics[j].score / 100;
+        var r = radius * value;
+        var x = centerX + r * Math.cos(angle);
+        var y = centerY + r * Math.sin(angle);
+        j === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+
+      var fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+      fillGradient.addColorStop(0, "rgba(56, 189, 248, 0.4)");
+      fillGradient.addColorStop(1, "rgba(129, 140, 248, 0.2)");
+      ctx.fillStyle = fillGradient;
+      ctx.fill();
+
+      ctx.strokeStyle = "#38bdf8";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // 数据点和标签
+      for (var j = 0; j < sides; j++) {
+        var angle = (Math.PI * 2 / sides) * j - Math.PI / 2;
+        var value = metrics[j].score / 100;
+        var r = radius * value;
+        var x = centerX + r * Math.cos(angle);
+        var y = centerY + r * Math.sin(angle);
+
+        // 数据点
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = "#38bdf8";
+        ctx.fill();
+        ctx.strokeStyle = "#0f172a";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 标签背景
+        var labelX = centerX + (radius + 30) * Math.cos(angle);
+        var labelY = centerY + (radius + 30) * Math.sin(angle);
+
+        ctx.fillStyle = "rgba(30, 41, 59, 0.9)";
+        ctx.beginPath();
+        var textWidth = ctx.measureText(metrics[j].label).width;
+        ctx.roundRect(labelX - textWidth/2 - 6, labelY - 10, textWidth + 12, 20, 4);
+        ctx.fill();
+
+        // 标签文字
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "12px 'Microsoft YaHei', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(metrics[j].label, labelX, labelY);
+
+        // 分数
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = "bold 11px 'Microsoft YaHei', sans-serif";
+        ctx.fillText(metrics[j].score + "分", labelX, labelY + 18);
+      }
+    }
+
+    // ========== 结果渲染 ==========
+    function getTagClass(value) {
+      if (value === "无明显异常") return "tag-none";
+      if (value === "轻度") return "tag-light";
+      if (value === "中度") return "tag-mid";
+      if (value === "重度") return "tag-heavy";
+      return "tag-unknown";
+    }
+
+    function displayValue(metric) {
+      var value = metric && metric.value ? metric.value : "unknown";
+      return value === "unknown" ? "未检测" : value;
+    }
+
+    function getScoreForMetric(metric) {
+      var value = metric && metric.value ? metric.value : "unknown";
+      if (value === "无明显异常") return 100;
+      if (value === "轻度") return 90;
+      if (value === "中度") return 75;
+      if (value === "重度") return 40;
+      return 50;
+    }
+
+    function metricRow(label, metric) {
+      var value = metric && metric.value ? metric.value : "unknown";
+      return (
+        '<div class="metric-row">' +
+          '<span class="label">' + label + '</span>' +
+          '<span class="tag ' + getTagClass(value) + '">' + displayValue(metric) + '</span>' +
+        '</div>'
+      );
+    }
+
+    function isValidAnalysis(a) {
+      return a && typeof a === "object" && !a.error && a.high_low_shoulder;
+    }
+
+    function renderResults(a) {
+      lastAnalysisData = a;
+
+      // 评分动画
+      var score = a.overall_score || 0;
+      var scoreEl = document.getElementById("overallScore");
+      var progressEl = document.getElementById("scoreProgress");
+
+      // 动画数字
+      var current = 0;
+      var increment = Math.ceil(score / 30);
+      var timer = setInterval(function() {
+        current += increment;
+        if (current >= score) {
+          current = score;
+          clearInterval(timer);
+        }
+        scoreEl.textContent = current;
+      }, 30);
+
+      // 动画圆环
+      var circumference = 2 * Math.PI * 65; // 408
+      var offset = circumference - (score / 100) * circumference;
+      setTimeout(function() {
+        progressEl.style.strokeDashoffset = offset;
+      }, 100);
+
+      // 评分描述
+      var desc = score >= 90 ? "体态<strong>优秀</strong>，继续保持！"
+        : score >= 70 ? "体态<strong>良好</strong>，有轻微异常"
+        : score >= 50 ? "体态<strong>一般</strong>，建议改善"
+        : "体态<strong>较差</strong>，需要重点关注";
+      document.getElementById("scoreDesc").innerHTML = desc;
+
+      // 雷达图
+      var radarMetrics = METRIC_DEFS.map(function(m) {
+        return { label: m.label, score: getScoreForMetric(a[m.key]) };
+      });
+      drawRadarChart(radarMetrics);
+
+      // 指标详情（合并为一个区域）
+      var metricsHtml = "";
+
+      metricsHtml += '<div class="metrics-group">';
+      metricsHtml += '<div class="metrics-group-title">正面分析</div>';
+      metricsHtml += metricRow("高低肩", a.high_low_shoulder);
+      metricsHtml += metricRow("骨盆倾斜", a.pelvic_tilt);
+      metricsHtml += '</div>';
+
+      metricsHtml += '<div class="metrics-group">';
+      metricsHtml += '<div class="metrics-group-title">侧面分析</div>';
+      metricsHtml += metricRow("头前伸", a.forward_head);
+      metricsHtml += metricRow("圆肩", a.round_shoulder);
+      metricsHtml += '</div>';
+
+      metricsHtml += '<div class="metrics-group">';
+      metricsHtml += '<div class="metrics-group-title">背面分析</div>';
+      metricsHtml += metricRow("脊柱侧弯趋势", a.spinal_asymmetry);
+      metricsHtml += '</div>';
+
+      document.getElementById("metricsContainer").innerHTML = metricsHtml;
+
+      // 运动处方
+      renderExercises(a);
+
+      // AI建议
+      var list = document.getElementById("adviceList");
+      list.innerHTML = "";
+      (a.advice || []).forEach(function (item, i) {
+        var li = document.createElement("li");
+        li.className = "advice-item";
+        li.innerHTML = '<span class="advice-num">' + (i + 1) + '</span><span>' + item + '</span>';
+        list.appendChild(li);
+      });
+
+      results.classList.add("visible");
+
+      // 保存到历史记录
+      saveToHistory(a);
+    }
+
+    function renderExercises(a) {
+      var container = document.getElementById("exerciseList");
+      container.innerHTML = "";
+
+      var exercises = [];
+      METRIC_DEFS.forEach(function(m) {
+        var metric = a[m.key];
+        if (metric && metric.value && metric.value !== "无明显异常" && EXERCISE_PRESETS[m.key]) {
+          EXERCISE_PRESETS[m.key].forEach(function(ex) { exercises.push(ex); });
+        }
+      });
+
+      if (exercises.length === 0) {
+        container.innerHTML = '<div class="empty-msg" style="color:var(--success)">您的体态非常好，继续保持！</div>';
+        return;
+      }
+
+      exercises.slice(0, 4).forEach(function(ex, i) {
+        var itemDiv = document.createElement("div");
+        itemDiv.className = "exercise-item";
+        itemDiv.innerHTML =
+          '<div class="exercise-header">' +
+            '<div class="exercise-num">' + (i + 1) + '</div>' +
+            '<div class="exercise-name">' + ex.name + '</div>' +
+          '</div>' +
+          '<div class="exercise-desc">' + ex.desc + '</div>' +
+          '<div class="exercise-meta">' +
+            '<span><span class="label">组数：</span><span class="value">' + ex.sets + '</span></span>' +
+            '<span><span class="label">时长：</span><span class="value">' + ex.duration + '</span></span>' +
+          '</div>';
+        container.appendChild(itemDiv);
+      });
+    }
+
+    // ========== 历史记录 ==========
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem("pose_history") || "[]");
+      } catch (e) { return []; }
+    }
+
+    function saveToHistory(analysis) {
+      var history = getHistory();
+      history.unshift({
+        time: new Date().toLocaleString("zh-CN"),
+        score: analysis.overall_score,
+        data: analysis
+      });
+      if (history.length > 20) history = history.slice(0, 20);
+      localStorage.setItem("pose_history", JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      var history = getHistory();
+      var container = document.getElementById("historyList");
+
+      if (history.length === 0) {
+        container.innerHTML = '<div class="empty-msg">暂无历史记录</div>';
+        return;
+      }
+
+      container.innerHTML = "";
+      history.forEach(function(item) {
+        var div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML =
+          '<span class="time">' + item.time + '</span>' +
+          '<span class="score">' + item.score + ' 分</span>';
+        div.onclick = function() {
+          renderResults(item.data);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById("clearHistoryBtn").onclick = function() {
+      if (confirm("确定清空所有历史记录？")) {
+        localStorage.removeItem("pose_history");
+        renderHistory();
+      }
+    };
+
+    // ========== 分享功能 ==========
+    function buildSummaryText(a) {
+      var lines = ["【智能体态分析报告】", "总分: " + (a.overall_score || "--") + " 分", ""];
+      METRIC_DEFS.forEach(function (m) {
+        lines.push("▸ " + m.label + ": " + displayValue(a[m.key]));
+      });
+      if (a.advice && a.advice.length) {
+        lines.push("", "改善建议:");
+        a.advice.forEach(function (t, i) { lines.push((i + 1) + ". " + t); });
+      }
+      return lines.join("\n");
+    }
+
+    document.getElementById("copyBtn").addEventListener("click", function () {
+      if (!lastAnalysisData) return;
+      var text = buildSummaryText(lastAnalysisData);
+      var btn = this;
+      navigator.clipboard.writeText(text).then(function () {
+        btn.textContent = "已复制";
+        btn.classList.add("copied");
+        setTimeout(function () {
+          btn.textContent = "复制摘要";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+      if (!lastAnalysisData) return;
+      var a = lastAnalysisData;
+      var canvas = document.createElement("canvas");
+      var W = 480, padding = 32, y = padding;
+      canvas.width = W;
+
+      var tmpY = padding + 52 + 90 + 12 + METRIC_DEFS.length * 36 + 24 + 12;
+      if (a.advice && a.advice.length) tmpY += a.advice.length * 28 + 32 + 12;
+      canvas.height = tmpY + 20;
+
+      var ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#0f172a";
+      ctx.fillRect(0, 0, W, canvas.height);
+
+      function roundRect(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.lineTo(x + w - r, y);
+        c.quadraticCurveTo(x + w, y, x + w, y + r);
+        c.lineTo(x + w, y + h - r);
+        c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        c.lineTo(x + r, y + h);
+        c.quadraticCurveTo(x, y + h, x, y + h - r);
+        c.lineTo(x, y + r);
+        c.quadraticCurveTo(x, y, x + r, y);
+        c.closePath();
+      }
+
+      function drawCard(h) {
+        ctx.fillStyle = "#1e293b";
+        roundRect(ctx, padding, y, W - padding * 2, h, 12);
+        ctx.fill();
+        y += h + 12;
+      }
+
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = "bold 22px 'Microsoft YaHei', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("智能体态分析报告", W / 2, y + 30);
+      y += 52;
+
+      drawCard(90);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = "14px 'Microsoft YaHei', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("整体评分", W / 2, y - 72);
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 48px 'Microsoft YaHei', sans-serif";
+      ctx.fillText((a.overall_score || "--"), W / 2, y - 28);
+
+      drawCard(METRIC_DEFS.length * 36 + 24);
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = "bold 14px 'Microsoft YaHei', sans-serif";
+      ctx.fillText("体态指标", padding + 16, y - METRIC_DEFS.length * 36 - 4);
+      METRIC_DEFS.forEach(function (m, i) {
+        var my = y - METRIC_DEFS.length * 36 + i * 36 + 8;
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "13px 'Microsoft YaHei', sans-serif";
+        ctx.fillText(m.label, padding + 16, my + 12);
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "bold 13px 'Microsoft YaHei', sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(displayValue(a[m.key]), W - padding - 16, my + 12);
+        ctx.textAlign = "left";
+      });
+
+      if (a.advice && a.advice.length) {
+        drawCard(a.advice.length * 28 + 32);
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "bold 14px 'Microsoft YaHei', sans-serif";
+        ctx.fillText("改善建议", padding + 16, y - a.advice.length * 28 - 12);
+        a.advice.forEach(function (t, i) {
+          var ay = y - a.advice.length * 28 + i * 28 + 4;
+          ctx.fillStyle = "#818cf8";
+          ctx.font = "13px 'Microsoft YaHei', sans-serif";
+          ctx.fillText((i + 1) + ". " + t, padding + 16, ay + 10);
+        });
+      }
+
+      var link = document.createElement("a");
+      link.download = "体态分析报告.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    function showError(msg) {
+      alert(msg);
+    }
+
+    // ========== 核心提交流程 ==========
+    async function doAnalysis() {
+      var valid = true;
+      for (var key in slots) {
+        var slot = slots[key];
+        if (!slot.input.files[0]) {
+          slot.hint.textContent = "请上传" + slot.label + "全身照片";
+          slot.hint.style.color = "#f87171";
+          valid = false;
+        }
+      }
+      if (!valid) return;
+
+      submitBtn.disabled = true;
+      loading.classList.add("visible");
+      results.classList.remove("visible");
+      resetSteps();
+
+      try {
+        setStep(0, "active");
+        var files = await Promise.all([
+          compressImage(slots.front.input.files[0]),
+          compressImage(slots.side.input.files[0]),
+          compressImage(slots.back.input.files[0]),
+        ]);
+        setStep(0, "done");
+
+        setStep(1, "active");
+        var formData = new FormData();
+        formData.append("front_image", files[0]);
+        formData.append("side_image", files[1]);
+        formData.append("back_image", files[2]);
+
+        var response = await fetch("/upload", { method: "POST", body: formData });
+        setStep(1, "done");
+
+        setStep(2, "active");
+        var data = await response.json();
+        setStep(2, "done");
+
+        setStep(3, "active");
+        setStep(3, "done");
+
+        if (data.analysis && data.analysis.error) {
+          showError(data.analysis.error);
+        } else if (isValidAnalysis(data.analysis)) {
+          renderResults(data.analysis);
+        } else {
+          showError("暂无分析结果");
+        }
+      } catch (e) {
+        showError("网络错误，请检查后端是否运行");
+      } finally {
+        submitBtn.disabled = false;
+        loading.classList.remove("visible");
+      }
+    }
+
+    submitBtn.addEventListener("click", doAnalysis);
+    document.getElementById("retryBtn").addEventListener("click", doAnalysis);
+
+    // 初始化历史记录
+    renderHistory();
+  </script>
+</body>
+</html>

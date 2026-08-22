@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能体态分析 - 专业版</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --radius: 12px;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.12);
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #0ea5e9;
+      --accent-light: #e0f2fe;
+      --card: #fff;
+      --bg: linear-gradient(135deg, #eef4f8 0%, #e0f2fe 100%);
+      --success: #059669;
+      --warning: #ca8a04;
+      --danger: #dc2626;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: "Microsoft YaHei", "PingFang SC", -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      line-height: 1.6;
+    }
+
+    .page { max-width: 680px; margin: 0 auto; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* ===== 头部区域 ===== */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .header .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .header .badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* ===== 拍摄提示 ===== */
+    .tips-card {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1px solid #bae6fd;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+
+    .tips-card .tips-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0369a1;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .tips-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #0c4a6e;
+    }
+
+    .tips-item .icon {
+      width: 20px;
+      height: 20px;
+      background: #0ea5e9;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    /* ===== 上传区域 ===== */
+    .upload-section {
+      margin-bottom: 20px;
+    }
+
+    .upload-section .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 520px) {
+      .upload-grid { grid-template-columns: 1fr; }
+      .tips-grid { grid-template-columns: 1fr; }
+    }
+
+    .upload-slot {
+      position: relative;
+    }
+
+    .upload-slot .slot-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .upload-slot .slot-title .num {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      line-height: 22px;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+
+    .preview-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius);
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #f8fafc;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .preview-box:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .preview-box.has-image {
+      border-style: solid;
+      border-color: var(--success);
+    }
+
+    .preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-box .placeholder {
+      text-align: center;
+      padding: 16px;
+    }
+
+    .preview-box .placeholder .icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .preview-box .placeholder .text {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .preview-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .preview-box .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
+      background: rgba(220, 38, 38, 0.9);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .preview-box.has-image .remove-btn {
+      display: flex;
+    }
+
+    .slot-hint {
+      font-size: 12px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 18px;
+    }
+
+    .slot-hint.error {
+      color: var(--danger);
+    }
+
+    /* ===== 提交按钮 ===== */
+    .submit-section {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 48px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.4);
+    }
+
+    .submit-btn:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    .submit-btn .btn-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ===== 加载动画 ===== */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .loading-overlay.visible { display: flex; }
+
+    .loading-box {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 48px;
+      text-align: center;
+      min-width: 320px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .loading-spinner {
+      width: 56px;
+      height: 56px;
+      border: 4px solid #e2e8f0;
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .loading-steps {
+      list-style: none;
+      text-align: left;
+    }
+
+    .loading-steps li {
+      font-size: 14px;
+      color: var(--muted);
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.3s;
+    }
+
+    .loading-steps li.active {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .loading-steps li.done {
+      color: var(--success);
+    }
+
+    .loading-steps li .step-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .loading-steps li.active .step-icon {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .loading-steps li.done .step-icon {
+      background: var(--success);
+      color: #fff;
+    }
+
+    /* ===== 结果区域 ===== */
+    .result-section { display: none; }
+    .result-section.visible { display: block; }
+
+    /* 评分卡片 */
+    .score-card {
+      text-align: center;
+      padding: 32px 24px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 2px solid #bae6fd;
+    }
+
+    .score-card .score-label {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .score-card .score-circle {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+
+    .score-card .score-circle svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .score-card .score-circle .bg {
+      fill: none;
+      stroke: #e2e8f0;
+      stroke-width: 8;
+    }
+
+    .score-card .score-circle .progress {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 339.292;
+      stroke-dashoffset: 339.292;
+      transition: stroke-dashoffset 1s ease-out;
+    }
+
+    .score-card .score-value {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .score-card .score-value span {
+      font-size: 16px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-left: 2px;
+    }
+
+    .score-card .score-desc {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* 雷达图卡片 */
+    .radar-card {
+      padding: 24px;
+    }
+
+    .radar-card .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .radar-card .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .radar-card .card-title .icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .radar-chart {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* 指标详情卡片 */
+    .metrics-card {
+      padding: 24px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title .icon {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .metrics-group {
+      margin-bottom: 20px;
+    }
+
+    .metrics-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .group-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .group-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .metric-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+
+    .metric-item:hover {
+      background: #f1f5f9;
+    }
+
+    .metric-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .metric-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .metric-icon.normal { background: #dcfce7; }
+    .metric-icon.light { background: #fef9c3; }
+    .metric-icon.mid { background: #fed7aa; }
+    .metric-icon.heavy { background: #fecaca; }
+
+    .metric-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: 14px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .metric-value.normal { background: #dcfce7; color: #059669; }
+    .metric-value.light { background: #fef9c3; color: #ca8a04; }
+    .metric-value.mid { background: #fed7aa; color: #ea580c; }
+    .metric-value.heavy { background: #fecaca; color: #dc2626; }
+
+    /* 运动处方卡片 */
+    .exercise-card {
+      padding: 24px;
+    }
+
+    .exercise-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .exercise-item {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 1px solid #86efac;
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .exercise-item:hover {
+      transform: translateX(4px);
+      box-shadow: var(--shadow);
+    }
+
+    .exercise-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .exercise-num {
+      width: 28px;
+      height: 28px;
+      background: var(--success);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .exercise-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #059669;
+    }
+
+    .exercise-desc {
+      font-size: 13px;
+      color: #047857;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .exercise-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .exercise-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #065f46;
+    }
+
+    .exercise-meta-item .label {
+      color: #059669;
+      font-weight: 600;
+    }
+
+    /* 建议卡片 */
+    .advice-card {
+      padding: 24px;
+      background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+      border: 1px solid #fde047;
+    }
+
+    .advice-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .advice-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #fde68a;
+    }
+
+    .advice-item:last-child {
+      border-bottom: none;
+    }
+
+    .advice-num {
+      width: 24px;
+      height: 24px;
+      background: #f59e0b;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .advice-text {
+      font-size: 14px;
+      color: #92400e;
+      line-height: 1.6;
+    }
+
+    /* 操作按钮 */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .action-btn:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: #fff;
+      border: none;
+    }
+
+    .action-btn.primary:hover {
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    }
+
+    .action-btn.copied {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #059669;
+    }
+
+    /* 空状态 */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state .text {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .retry-btn {
+      background: linear-gradient(135deg, #0ea5e9, #0284c7);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+    }
+
+    /* 动画效果 */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    /* 进度条动画 */
+    .progress-bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #38bdf8);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- 头部 -->
+    <div class="header">
+      <h1>智能体态分析</h1>
+      <p class="subtitle">AI驱动的专业体态评估系统</p>
+      <span class="badge">✨ 专业版 v2.0</span>
+    </div>
+
+    <!-- 上传区域 -->
+    <div class="card" id="uploadSection">
+      <div class="tips-card">
+        <div class="tips-title">
+          <span>📸</span>
+          拍摄要求
+        </div>
+        <div class="tips-grid">
+          <div class="tips-item">
+            <span class="icon">✓</span>
+            全身入镜
+          </div>
+          <div class="tips-item">
+            <span class="icon">✓</span>
+            身体站直
+          </div>
+          <div class="tips-item">
+            <span class="icon">✓</span>
+            穿贴身衣物
+          </div>
+          <div class="tips-item">
+            <span class="icon">✓</span>
+            光线充足
+          </div>
+        </div>
+      </div>
+
+      <div class="upload-section">
+        <div class="section-title">
+          <span>📷</span>
+          上传照片
+        </div>
+        <div class="upload-grid">
+          <div class="upload-slot">
+            <div class="slot-title"><span class="num">1</span>正面照片</div>
+            <div class="preview-box" id="previewFront">
+              <div class="placeholder">
+                <div class="icon">📷</div>
+                <div class="text">点击上传</div>
+              </div>
+              <button class="remove-btn" onclick="removeImage('front')">×</button>
+            </div>
+            <input type="file" id="frontInput" accept="image/*">
+            <p class="slot-hint" id="hintFront">请上传正面全身照片</p>
+          </div>
+          <div class="upload-slot">
+            <div class="slot-title"><span class="num">2</span>侧面照片</div>
+            <div class="preview-box" id="previewSide">
+              <div class="placeholder">
+                <div class="icon">📷</div>
+                <div class="text">点击上传</div>
+              </div>
+              <button class="remove-btn" onclick="removeImage('side')">×</button>
+            </div>
+            <input type="file" id="sideInput" accept="image/*">
+            <p class="slot-hint" id="hintSide">请上传侧面全身照片</p>
+          </div>
+          <div class="upload-slot">
+            <div class="slot-title"><span class="num">3</span>背面照片</div>
+            <div class="preview-box" id="previewBack">
+              <div class="placeholder">
+                <div class="icon">📷</div>
+                <div class="text">点击上传</div>
+              </div>
+              <button class="remove-btn" onclick="removeImage('back')">×</button>
+            </div>
+            <input type="file" id="backInput" accept="image/*">
+            <p class="slot-hint" id="hintBack">请上传背面全身照片</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-section">
+        <button class="submit-btn" id="submitBtn">
+          <span class="btn-content">
+            <span>🔍</span>
+            开始分析
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loading">
+      <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <div class="loading-title">正在分析您的体态</div>
+        <ul class="loading-steps" id="loadingSteps">
+          <li id="stepCompress"><span class="step-icon">1</span>压缩图片</li>
+          <li id="stepUpload"><span class="step-icon">2</span>上传照片</li>
+          <li id="stepAnalyze"><span class="step-icon">3</span>AI关键点检测</li>
+          <li id="stepAdvice"><span class="step-icon">4</span>生成改善建议</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 结果区域 -->
+    <div class="result-section" id="results">
+      <!-- 评分卡片 -->
+      <div class="card score-card fade-in-up">
+        <div class="score-label">整体体态评分</div>
+        <div class="score-circle">
+          <svg viewBox="0 0 120 120">
+            <circle class="bg" cx="60" cy="60" r="54"/>
+            <circle class="progress" id="scoreProgress" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="score-value" id="overallScore">--<span>分</span></div>
+        </div>
+        <div class="score-desc" id="scoreDesc">等待分析...</div>
+      </div>
+
+      <!-- 雷达图卡片 -->
+      <div class="card radar-card fade-in-up" style="animation-delay: 0.1s;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="icon">📊</span>
+            体态评估雷达图
+          </div>
+        </div>
+        <div class="radar-chart">
+          <canvas id="radarCanvas" width="400" height="400"></canvas>
+        </div>
+      </div>
+
+      <!-- 指标详情卡片 -->
+      <div class="card metrics-card fade-in-up" style="animation-delay: 0.2s;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="icon">📋</span>
+            指标详情
+          </div>
+        </div>
+        <div id="metricsContainer"></div>
+      </div>
+
+      <!-- 运动处方卡片 -->
+      <div class="card exercise-card fade-in-up" style="animation-delay: 0.3s;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="icon">🏃</span>
+            体态运动处方
+          </div>
+        </div>
+        <div class="exercise-list" id="exerciseList"></div>
+      </div>
+
+      <!-- 建议卡片 -->
+      <div class="card advice-card fade-in-up" style="animation-delay: 0.4s;">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="icon">💡</span>
+            AI改善建议
+          </div>
+        </div>
+        <ul class="advice-list" id="adviceList"></ul>
+      </div>
+
+      <!-- 操作按钮 -->
+      <div class="action-buttons fade-in-up" style="animation-delay: 0.5s;">
+        <button class="action-btn" id="copyBtn">
+          <span>📋</span>复制摘要
+        </button>
+        <button class="action-btn primary" id="downloadBtn">
+          <span>📥</span>下载报告
+        </button>
+        <button class="action-btn" id="retryBtn">
+          <span>🔄</span>重新分析
+        </button>
+      </div>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="card empty-state" id="emptyState" style="display:none;">
+      <div class="icon">📊</div>
+      <div class="text" id="emptyText">暂无分析结果</div>
+      <button class="retry-btn" id="retryBtnEmpty" style="display:none;">重新分析</button>
+    </div>
+  </div>
+
+  <script>
+    // ========== 配置和状态 ==========
+    const slots = {
+      front: { input: document.getElementById("frontInput"), preview: document.getElementById("previewFront"), hint: document.getElementById("hintFront"), label: "正面" },
+      side: { input: document.getElementById("sideInput"), preview: document.getElementById("previewSide"), hint: document.getElementById("hintSide"), label: "侧面" },
+      back: { input: document.getElementById("backInput"), preview: document.getElementById("previewBack"), hint: document.getElementById("hintBack"), label: "背面" },
+    };
+
+    const submitBtn = document.getElementById("submitBtn");
+    const loading = document.getElementById("loading");
+    const results = document.getElementById("results");
+    const emptyState = document.getElementById("emptyState");
+    const emptyText = document.getElementById("emptyText");
+    const retryBtn = document.getElementById("retryBtn");
+    const retryBtnEmpty = document.getElementById("retryBtnEmpty");
+
+    let lastFormData = null;
+    let lastAnalysisData = null;
+
+    // 指标元数据
+    const METRIC_DEFS = [
+      { label: "高低肩", key: "high_low_shoulder", icon: "🦴", group: "正面分析" },
+      { label: "骨盆倾斜", key: "pelvic_tilt", icon: "🦴", group: "正面分析" },
+      { label: "头前伸", key: "forward_head", icon: "🦴", group: "侧面分析" },
+      { label: "圆肩", key: "round_shoulder", icon: "🦴", group: "侧面分析" },
+      { label: "脊柱侧弯趋势", key: "spinal_asymmetry", icon: "🦴", group: "背面分析" },
+    ];
+
+    // 运动处方数据
+    const EXERCISE_PRESETS = {
+      high_low_shoulder: [
+        { name: "肩部平衡拉伸", desc: "站立位，一手举过头顶向对侧弯曲，感受侧腰拉伸。", sets: "每侧3组", duration: "30秒/组" },
+        { name: "肩胛骨回缩训练", desc: "坐姿，双臂前伸，然后向后拉肩胛骨并夹紧。", sets: "3组", duration: "15次/组" },
+      ],
+      pelvic_tilt: [
+        { name: "骨盆时钟运动", desc: "仰卧屈膝，骨盆向前/后/左/右倾斜，像时钟指针一样运动。", sets: "3组", duration: "10次/组" },
+        { name: "臀桥训练", desc: "仰卧屈膝，抬起臀部至肩-膝成直线，保持。", sets: "3组", duration: "15次/组" },
+      ],
+      forward_head: [
+        { name: "颈部深层屈肌训练", desc: "仰卧，下巴微收，头部轻轻抬离地面，保持颈部稳定。", sets: "3组", duration: "10秒/次" },
+        { name: "胸椎伸展", desc: "坐姿，双手抱头，肘部向前，缓慢向后伸展胸椎。", sets: "3组", duration: "10次/组" },
+      ],
+      round_shoulder: [
+        { name: "门框胸部拉伸", desc: "站在门框前，手臂呈90度靠在门框上，身体前倾感受胸部拉伸。", sets: "每侧3组", duration: "30秒/组" },
+        { name: "YTWL训练", desc: "俯卧，手臂分别做Y、T、W、L形状，强化肩背肌群。", sets: "2组", duration: "8次/组" },
+      ],
+      spinal_asymmetry: [
+        { name: "猫牛式伸展", desc: "四足跪姿，交替做猫式（弓背）和牛式（塌腰），活动脊柱。", sets: "3组", duration: "10次/组" },
+        { name: "侧向伸展", desc: "站立，一手叉腰，另一手举过头顶向对侧弯曲。", sets: "每侧3组", duration: "15秒/组" },
+      ],
+    };
+
+    // ========== 工具函数 ==========
+    function getTagClass(value) {
+      if (value === "无明显异常") return "normal";
+      if (value === "轻度") return "light";
+      if (value === "中度") return "mid";
+      if (value === "重度") return "heavy";
+      return "normal";
+    }
+
+    function displayValue(metric) {
+      var value = metric && metric.value ? metric.value : "unknown";
+      if (value === "unknown") return "未检测";
+      return value;
+    }
+
+    function getScoreForMetric(metric) {
+      var value = metric && metric.value ? metric.value : "unknown";
+      if (value === "无明显异常") return 100;
+      if (value === "轻度") return 70;
+      if (value === "中度") return 40;
+      if (value === "重度") return 10;
+      return 50;
+    }
+
+    // ========== 图片压缩 ==========
+    const COMPRESS_MAX_SIZE = 1920;
+    const COMPRESS_QUALITY = 0.8;
+
+    function compressImage(file) {
+      return new Promise(function (resolve) {
+        if (file.size < 500 * 1024) {
+          resolve(file);
+          return;
+        }
+        var img = new Image();
+        var url = URL.createObjectURL(file);
+        img.onload = function () {
+          var w = img.width, h = img.height;
+          if (w > COMPRESS_MAX_SIZE || h > COMPRESS_MAX_SIZE) {
+            var ratio = Math.min(COMPRESS_MAX_SIZE / w, COMPRESS_MAX_SIZE / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          var canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          canvas.toBlob(function (blob) {
+            URL.revokeObjectURL(url);
+            if (blob && blob.size < file.size) {
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+            } else {
+              resolve(file);
+            }
+          }, "image/jpeg", COMPRESS_QUALITY);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+      });
+    }
+
+    // ========== 加载步骤动画 ==========
+    var stepIds = ["stepCompress", "stepUpload", "stepAnalyze", "stepAdvice"];
+
+    function resetSteps() {
+      stepIds.forEach(function (id) {
+        var el = document.getElementById(id);
+        el.className = "";
+        el.querySelector(".step-icon").textContent = stepIds.indexOf(id) + 1;
+      });
+    }
+
+    function setStep(index, state) {
+      var el = document.getElementById(stepIds[index]);
+      if (state === "active") {
+        el.className = "active";
+        el.querySelector(".step-icon").textContent = "◎";
+      } else if (state === "done") {
+        el.className = "done";
+        el.querySelector(".step-icon").textContent = "✓";
+      }
+    }
+
+    // ========== 预览功能 ==========
+    function setupPreview(key) {
+      var slot = slots[key];
+      slot.input.addEventListener("change", function () {
+        var file = slot.input.files[0];
+        if (!file) return;
+        if (slot._blobUrl) URL.revokeObjectURL(slot._blobUrl);
+        var url = URL.createObjectURL(file);
+        slot._blobUrl = url;
+        slot.preview.innerHTML = '<img src="' + url + '" alt="' + slot.label + '"><button class="remove-btn" onclick="removeImage(\'' + key + '\')">×</button>';
+        slot.preview.classList.add("has-image");
+        slot.hint.textContent = file.name + " (" + (file.size / 1024).toFixed(0) + "KB)";
+        slot.hint.classList.remove("error");
+      });
+    }
+
+    function removeImage(key) {
+      var slot = slots[key];
+      slot.input.value = "";
+      if (slot._blobUrl) URL.revokeObjectURL(slot._blobUrl);
+      slot.preview.innerHTML = '<div class="placeholder"><div class="icon">📷</div><div class="text">点击上传</div></div><button class="remove-btn" onclick="removeImage(\'' + key + '\')">×</button>';
+      slot.preview.classList.remove("has-image");
+      slot.hint.textContent = "请上传" + slot.label + "全身照片";
+      slot.hint.classList.remove("error");
+    }
+
+    setupPreview("front");
+    setupPreview("side");
+    setupPreview("back");
+
+    // ========== 雷达图绘制 ==========
+    function drawRadarChart(metrics) {
+      var canvas = document.getElementById("radarCanvas");
+      var ctx = canvas.getContext("2d");
+      var centerX = canvas.width / 2;
+      var centerY = canvas.height / 2;
+      var radius = 140;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制背景网格
+      var levels = 5;
+      for (var i = levels; i > 0; i--) {
+        var r = (radius / levels) * i;
+        ctx.beginPath();
+        for (var j = 0; j < metrics.length; j++) {
+          var angle = (Math.PI * 2 / metrics.length) * j - Math.PI / 2;
+          var x = centerX + r * Math.cos(angle);
+          var y = centerY + r * Math.sin(angle);
+          if (j === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = i % 2 === 0 ? "#f8fafc" : "#f1f5f9";
+        ctx.fill();
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 绘制轴线
+      for (var j = 0; j < metrics.length; j++) {
+        var angle = (Math.PI * 2 / metrics.length) * j - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 绘制数据区域
+      ctx.beginPath();
+      for (var j = 0; j < metrics.length; j++) {
+        var angle = (Math.PI * 2 / metrics.length) * j - Math.PI / 2;
+        var value = metrics[j].score / 100;
+        var r = radius * value;
+        var x = centerX + r * Math.cos(angle);
+        var y = centerY + r * Math.sin(angle);
+        if (j === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(14, 165, 233, 0.2)";
+      ctx.fill();
+      ctx.strokeStyle = "#0ea5e9";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 绘制数据点和标签
+      for (var j = 0; j < metrics.length; j++) {
+        var angle = (Math.PI * 2 / metrics.length) * j - Math.PI / 2;
+        var value = metrics[j].score / 100;
+        var r = radius * value;
+        var x = centerX + r * Math.cos(angle);
+        var y = centerY + r * Math.sin(angle);
+
+        // 数据点
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#0ea5e9";
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 标签
+        var labelX = centerX + (radius + 20) * Math.cos(angle);
+        var labelY = centerY + (radius + 20) * Math.sin(angle);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "13px 'Microsoft YaHei', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(metrics[j].label, labelX, labelY);
+      }
+    }
+
+    // ========== 结果渲染 ==========
+    function renderResults(a) {
+      lastAnalysisData = a;
+
+      // 评分动画
+      var score = a.overall_score || 0;
+      var scoreEl = document.getElementById("overallScore");
+      var progressEl = document.getElementById("scoreProgress");
+      var descEl = document.getElementById("scoreDesc");
+
+      // 圆环进度动画
+      var circumference = 2 * Math.PI * 54;
+      var offset = circumference - (score / 100) * circumference;
+      setTimeout(function() {
+        progressEl.style.strokeDashoffset = offset;
+      }, 100);
+
+      scoreEl.innerHTML = score + '<span>分</span>';
+
+      // 评分描述
+      if (score >= 90) descEl.textContent = "体态优秀，继续保持！";
+      else if (score >= 70) descEl.textContent = "体态良好，有轻微异常";
+      else if (score >= 50) descEl.textContent = "体态一般，建议改善";
+      else descEl.textContent = "体态较差，需要重点关注";
+
+      // 渲染雷达图
+      var radarMetrics = METRIC_DEFS.map(function(m) {
+        return {
+          label: m.label,
+          score: getScoreForMetric(a[m.key])
+        };
+      });
+      drawRadarChart(radarMetrics);
+
+      // 渲染指标详情
+      renderMetrics(a);
+
+      // 渲染运动处方
+      renderExercises(a);
+
+      // 渲染建议
+      var list = document.getElementById("adviceList");
+      list.innerHTML = "";
+      (a.advice || []).forEach(function (item, i) {
+        var li = document.createElement("li");
+        li.className = "advice-item";
+        li.innerHTML = '<span class="advice-num">' + (i + 1) + '</span><span class="advice-text">' + item + '</span>';
+        list.appendChild(li);
+      });
+
+      results.classList.add("visible");
+      emptyState.style.display = "none";
+    }
+
+    function renderMetrics(a) {
+      var container = document.getElementById("metricsContainer");
+      container.innerHTML = "";
+
+      var groups = {};
+      METRIC_DEFS.forEach(function(m) {
+        if (!groups[m.group]) groups[m.group] = [];
+        groups[m.group].push(m);
+      });
+
+      for (var groupName in groups) {
+        var groupDiv = document.createElement("div");
+        groupDiv.className = "metrics-group";
+        groupDiv.innerHTML = '<div class="group-title">' + groupName + '</div>';
+
+        groups[groupName].forEach(function(m) {
+          var metric = a[m.key];
+          var value = displayValue(metric);
+          var tagClass = getTagClass(metric && metric.value ? metric.value : "unknown");
+
+          var itemDiv = document.createElement("div");
+          itemDiv.className = "metric-item";
+          itemDiv.innerHTML =
+            '<div class="metric-info">' +
+              '<div class="metric-icon ' + tagClass + '">' + m.icon + '</div>' +
+              '<div class="metric-name">' + m.label + '</div>' +
+            '</div>' +
+            '<div class="metric-value ' + tagClass + '">' + value + '</div>';
+          groupDiv.appendChild(itemDiv);
+        });
+
+        container.appendChild(groupDiv);
+      }
+    }
+
+    function renderExercises(a) {
+      var container = document.getElementById("exerciseList");
+      container.innerHTML = "";
+
+      var exercises = [];
+      METRIC_DEFS.forEach(function(m) {
+        var metric = a[m.key];
+        if (metric && metric.value && metric.value !== "无明显异常" && EXERCISE_PRESETS[m.key]) {
+          EXERCISE_PRESETS[m.key].forEach(function(ex) {
+            exercises.push(ex);
+          });
+        }
+      });
+
+      if (exercises.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#059669;padding:24px;">🎉 您的体态非常好，继续保持！</div>';
+        return;
+      }
+
+      exercises.slice(0, 4).forEach(function(ex, i) {
+        var itemDiv = document.createElement("div");
+        itemDiv.className = "exercise-item";
+        itemDiv.innerHTML =
+          '<div class="exercise-header">' +
+            '<div class="exercise-num">' + (i + 1) + '</div>' +
+            '<div class="exercise-name">' + ex.name + '</div>' +
+          '</div>' +
+          '<div class="exercise-desc">' + ex.desc + '</div>' +
+          '<div class="exercise-meta">' +
+            '<div class="exercise-meta-item"><span class="label">组数：</span>' + ex.sets + '</div>' +
+            '<div class="exercise-meta-item"><span class="label">时长：</span>' + ex.duration + '</div>' +
+          '</div>';
+        container.appendChild(itemDiv);
+      });
+    }
+
+    // ========== 分享功能 ==========
+    function buildSummaryText(a) {
+      var lines = [
+        "【智能体态分析报告】",
+        "总分: " + (a.overall_score || "--") + " 分",
+        "",
+      ];
+      METRIC_DEFS.forEach(function (m) {
+        lines.push("▸ " + m.label + ": " + displayValue(a[m.key]));
+      });
+      if (a.advice && a.advice.length) {
+        lines.push("", "改善建议:");
+        a.advice.forEach(function (t, i) { lines.push((i + 1) + ". " + t); });
+      }
+      return lines.join("\n");
+    }
+
+    document.getElementById("copyBtn").addEventListener("click", function () {
+      if (!lastAnalysisData) return;
+      var text = buildSummaryText(lastAnalysisData);
+      var btn = this;
+      navigator.clipboard.writeText(text).then(function () {
+        btn.innerHTML = '<span>✅</span>已复制';
+        btn.classList.add("copied");
+        setTimeout(function () {
+          btn.innerHTML = '<span>📋</span>复制摘要';
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", function () {
+      if (!lastAnalysisData) return;
+      var a = lastAnalysisData;
+      var canvas = document.createElement("canvas");
+      var W = 480, padding = 32;
+      var y = padding;
+      canvas.width = W;
+      var ctx = canvas.getContext("2d");
+
+      var tmpY = padding + 52;
+      tmpY += 90 + 12;
+      tmpY += METRIC_DEFS.length * 36 + 24 + 12;
+      if (a.advice && a.advice.length) tmpY += a.advice.length * 28 + 32 + 12;
+      canvas.height = tmpY + 20;
+
+      ctx.fillStyle = "#eef4f8";
+      ctx.fillRect(0, 0, W, canvas.height);
+
+      function roundRect(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.lineTo(x + w - r, y);
+        c.quadraticCurveTo(x + w, y, x + w, y + r);
+        c.lineTo(x + w, y + h - r);
+        c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        c.lineTo(x + r, y + h);
+        c.quadraticCurveTo(x, y + h, x, y + h - r);
+        c.lineTo(x, y + r);
+        c.quadraticCurveTo(x, y, x + r, y);
+        c.closePath();
+      }
+
+      function drawCard(h) {
+        ctx.fillStyle = "#fff";
+        roundRect(ctx, padding, y, W - padding * 2, h, 12);
+        ctx.fill();
+        y += h + 12;
+      }
+
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 22px 'Microsoft YaHei', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("智能体态分析报告", W / 2, y + 30);
+      y += 52;
+
+      drawCard(90);
+      ctx.fillStyle = "#64748b";
+      ctx.font = "14px 'Microsoft YaHei', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("整体评分", W / 2, y - 72);
+      ctx.fillStyle = "#0ea5e9";
+      ctx.font = "bold 48px 'Microsoft YaHei', sans-serif";
+      ctx.fillText((a.overall_score || "--"), W / 2, y - 28);
+
+      drawCard(METRIC_DEFS.length * 36 + 24);
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 14px 'Microsoft YaHei', sans-serif";
+      ctx.fillText("体态指标", padding + 16, y - METRIC_DEFS.length * 36 - 4);
+      METRIC_DEFS.forEach(function (m, i) {
+        var my = y - METRIC_DEFS.length * 36 + i * 36 + 8;
+        ctx.fillStyle = "#64748b";
+        ctx.font = "13px 'Microsoft YaHei', sans-serif";
+        ctx.fillText(m.label, padding + 16, my + 12);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 13px 'Microsoft YaHei', sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText(displayValue(a[m.key]), W - padding - 16, my + 12);
+        ctx.textAlign = "left";
+      });
+
+      if (a.advice && a.advice.length) {
+        drawCard(a.advice.length * 28 + 32);
+        ctx.fillStyle = "#0f172a";
+        ctx.font = "bold 14px 'Microsoft YaHei', sans-serif";
+        ctx.fillText("改善建议", padding + 16, y - a.advice.length * 28 - 12);
+        a.advice.forEach(function (t, i) {
+          var ay = y - a.advice.length * 28 + i * 28 + 4;
+          ctx.fillStyle = "#1e40af";
+          ctx.font = "13px 'Microsoft YaHei', sans-serif";
+          ctx.fillText((i + 1) + ". " + t, padding + 16, ay + 10);
+        });
+      }
+
+      var link = document.createElement("a");
+      link.download = "体态分析报告.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    function showError(msg, showRetry) {
+      emptyText.textContent = msg;
+      retryBtnEmpty.style.display = showRetry ? "inline-block" : "none";
+      emptyState.style.display = "block";
+      results.classList.remove("visible");
+    }
+
+    // ========== 核心提交流程 ==========
+    async function doAnalysis() {
+      var valid = true;
+      for (var key in slots) {
+        var slot = slots[key];
+        if (!slot.input.files[0]) {
+          slot.hint.textContent = "请上传" + slot.label + "全身照片";
+          slot.hint.classList.add("error");
+          valid = false;
+        }
+      }
+      if (!valid) return;
+
+      submitBtn.disabled = true;
+      loading.classList.add("visible");
+      results.classList.remove("visible");
+      emptyState.style.display = "none";
+      resetSteps();
+
+      try {
+        setStep(0, "active");
+        var files = await Promise.all([
+          compressImage(slots.front.input.files[0]),
+          compressImage(slots.side.input.files[0]),
+          compressImage(slots.back.input.files[0]),
+        ]);
+        setStep(0, "done");
+
+        setStep(1, "active");
+        var formData = new FormData();
+        formData.append("front_image", files[0]);
+        formData.append("side_image", files[1]);
+        formData.append("back_image", files[2]);
+        lastFormData = formData;
+
+        var response = await fetch("/upload", { method: "POST", body: formData });
+        setStep(1, "done");
+
+        setStep(2, "active");
+        var data = await response.json();
+        setStep(2, "done");
+
+        setStep(3, "active");
+        await new Promise(function (r) { setTimeout(r, 300); });
+        setStep(3, "done");
+
+        if (data.analysis && data.analysis.error) {
+          showError(data.analysis.error + (data.analysis.raw ? "：" + String(data.analysis.raw).slice(0, 60) : ""), true);
+        } else if (data.analysis && data.analysis.high_low_shoulder) {
+          renderResults(data.analysis);
+        } else {
+          showError("暂无分析结果", true);
+        }
+      } catch (e) {
+        showError("网络错误，请检查后端是否运行", true);
+      } finally {
+        submitBtn.disabled = false;
+        loading.classList.remove("visible");
+      }
+    }
+
+    submitBtn.addEventListener("click", doAnalysis);
+    retryBtn.addEventListener("click", doAnalysis);
+    retryBtnEmpty.addEventListener("click", doAnalysis);
+  </script>
+</body>
+</html>
