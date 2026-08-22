@@ -102,4 +102,4 @@ cd backend
 
 ## 📄 License
 
-未指定。如需引用或二次开发，请先联系仓库所有者。
+[MIT](LICENSE) © 2026 AzureDestiny346
