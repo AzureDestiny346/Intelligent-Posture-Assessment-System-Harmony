@@ -72,36 +72,6 @@
         }
       },
       {
-        "name": "ohos.permission.CAMERA",
-        "reason": "$string:permission_camera_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
-        "name": "ohos.permission.READ_IMAGEVIDEO",
-        "reason": "$string:permission_media_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
-        "name": "ohos.permission.WRITE_IMAGEVIDEO",
-        "reason": "$string:permission_write_media_reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "inuse"
-        }
-      },
-      {
         "name": "ohos.permission.DISTRIBUTED_DATASYNC",
         "reason": "$string:permission_distributed_reason",
         "usedScene": {

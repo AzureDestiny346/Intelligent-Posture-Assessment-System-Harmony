@@ -4,9 +4,9 @@ import { window } from '@kit.ArkUI';
 import { DistributedService } from '../service/DistributedService';
 
 const DOMAIN = 0x0000;
+// 拍照/选图走 cameraPicker 与 PhotoViewPicker（免权限安全控件），无需相机与媒体库权限
 const PERMISSIONS: Permissions[] = [
-  'ohos.permission.CAMERA',
-  'ohos.permission.READ_IMAGEVIDEO',
+  'ohos.permission.DISTRIBUTED_DATASYNC',
 ];
 
 export default class EntryAbility extends UIAbility {

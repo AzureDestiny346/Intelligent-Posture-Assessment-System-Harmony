@@ -17,18 +17,6 @@
       "value": "需要访问网络以进行体态分析"
     },
     {
-      "name": "permission_camera_reason",
-      "value": "需要使用相机拍摄体态照片"
-    },
-    {
-      "name": "permission_media_reason",
-      "value": "需要读取相册中的体态照片"
-    },
-    {
-      "name": "permission_write_media_reason",
-      "value": "需要保存压缩后的体态照片到临时目录"
-    },
-    {
       "name": "permission_distributed_reason",
       "value": "需要跨设备同步体态评估报告数据"
     },

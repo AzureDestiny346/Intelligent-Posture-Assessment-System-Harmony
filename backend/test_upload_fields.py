@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-最小响应契约检查：POST /upload 后 analysis 必须包含全部 6 项指标 + 4 个 AI 字段。
+最小响应契约检查：POST /upload 后 analysis 必须包含全部 9 项指标 + 4 个 AI 字段。
 不依赖网络与真实照片（1x1 JPEG 走"未检出人体"路径），随时可跑：
     .venv/Scripts/python.exe test_upload_fields.py
 """
@@ -24,6 +24,7 @@ TINY_JPEG = base64.b64decode(
 METRICS = [
     "high_low_shoulder", "pelvic_lateral_tilt", "pelvic_anterior_tilt",
     "forward_head", "round_shoulder", "spinal_asymmetry",
+    "elbow_asymmetry", "leg_length_diff", "knee_hyperextension",
 ]
 AI_FIELDS = ["advice", "deep_analysis", "exercise_prescription"]
 
@@ -50,14 +51,17 @@ def main() -> int:
         assert key in analysis and analysis[key], f"缺少或为空的 AI 字段: {key}"
 
     radar = analysis["radar_data"]
-    assert isinstance(radar, list) and len(radar) == 6, f"雷达图应为 6 项，实际 {len(radar) if isinstance(radar, list) else radar}"
-    assert {r["metric"] for r in radar} == {"高低肩", "骨盆侧倾", "骨盆前倾", "头前伸", "圆肩", "脊柱侧弯趋势"}, "雷达图标签不符"
+    assert isinstance(radar, list) and len(radar) == 9, f"雷达图应为 9 项，实际 {len(radar) if isinstance(radar, list) else radar}"
+    assert {r["metric"] for r in radar} == {
+        "高低肩", "骨盆侧倾", "骨盆前倾", "头前伸", "圆肩", "脊柱侧弯趋势",
+        "肘关节对称", "长短腿", "膝盖超伸",
+    }, "雷达图标签不符"
 
     risks = analysis["health_risks"]
     assert isinstance(risks, list), "health_risks 应为列表"
     assert "overall_score" in analysis, "缺少 overall_score"
 
-    print(f"PASS: 6 指标齐全, radar_data=6 项, health_risks={len(risks)} 条, "
+    print(f"PASS: 9 指标齐全, radar_data=9 项, health_risks={len(risks)} 条, "
           f"overall_score={analysis['overall_score']}, advice={len(analysis['advice'])} 条")
 
     # 回归：AI 回吐提示词模板（"建议1/建议2"占位文本）必须被解析器拒绝走兜底

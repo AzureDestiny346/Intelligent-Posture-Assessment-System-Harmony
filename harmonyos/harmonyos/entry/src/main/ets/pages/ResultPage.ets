@@ -44,6 +44,9 @@ struct ResultPage {
       result.forward_head = this.parseMetricResult(data['forward_head'] as Record<string, Object>);
       result.round_shoulder = this.parseMetricResult(data['round_shoulder'] as Record<string, Object>);
       result.spinal_asymmetry = this.parseMetricResult(data['spinal_asymmetry'] as Record<string, Object>);
+      result.elbow_asymmetry = this.parseMetricResult(data['elbow_asymmetry'] as Record<string, Object>);
+      result.leg_length_diff = this.parseMetricResult(data['leg_length_diff'] as Record<string, Object>);
+      result.knee_hyperextension = this.parseMetricResult(data['knee_hyperextension'] as Record<string, Object>);
       result.radar_data = this.parseRadarData(data['radar_data'] as Object[]);
       result.exercise_prescription = this.parseExerciseItems(data['exercise_prescription'] as Object[]);
       result.health_risks = this.parseHealthRisks(data['health_risks'] as Object[]);

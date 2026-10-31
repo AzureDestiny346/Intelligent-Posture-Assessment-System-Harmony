@@ -30,6 +30,9 @@ export class AnalysisResult {
   forward_head: MetricResult = new MetricResult();
   round_shoulder: MetricResult = new MetricResult();
   spinal_asymmetry: MetricResult = new MetricResult();
+  elbow_asymmetry: MetricResult = new MetricResult();
+  leg_length_diff: MetricResult = new MetricResult();
+  knee_hyperextension: MetricResult = new MetricResult();
   overall_score: string = '';
   advice: string[] = [];
   deep_analysis: string = '';
@@ -48,6 +51,9 @@ export class AnalysisResult {
       'forward_head': result.forward_head,
       'round_shoulder': result.round_shoulder,
       'spinal_asymmetry': result.spinal_asymmetry,
+      'elbow_asymmetry': result.elbow_asymmetry,
+      'leg_length_diff': result.leg_length_diff,
+      'knee_hyperextension': result.knee_hyperextension,
     };
     return resultObj[key] ?? new MetricResult();
   }
@@ -102,4 +108,7 @@ export const METRIC_DEFS: MetricDef[] = [
   { label: '头前伸', key: 'forward_head', view: '侧面' } as MetricDef,
   { label: '圆肩', key: 'round_shoulder', view: '侧面' } as MetricDef,
   { label: '脊柱侧弯趋势', key: 'spinal_asymmetry', view: '背面' } as MetricDef,
+  { label: '肘关节对称', key: 'elbow_asymmetry', view: '正面' } as MetricDef,
+  { label: '长短腿', key: 'leg_length_diff', view: '正面' } as MetricDef,
+  { label: '膝盖超伸', key: 'knee_hyperextension', view: '侧面' } as MetricDef,
 ];

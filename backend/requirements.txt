@@ -3,4 +3,8 @@ Werkzeug>=3.0.0
 zhipuai>=2.1.0
 python-dotenv>=1.0.0
 mediapipe>=0.10.30
-opencv-python-headless>=4.8.0
+# mediapipe 依赖 opencv-contrib-python；不要同时装多个 OpenCV 发行版，
+# 它们共享同一个 cv2/ 目录，卸载任一个会把其余包的文件删残
+opencv-contrib-python>=4.8.0
+# 代码中显式 import numpy，不能只靠 mediapipe 传递引入
+numpy>=1.26.0

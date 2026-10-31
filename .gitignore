@@ -21,6 +21,17 @@ graphify-out/
 .claude/
 .vscode/
 .superpowers/
+.zcode/
+
+# 文档生成物侧车文件（截图/JSON/HTML 侧车）
+docs/diagrams/*.visual-check.*
+
+# Windows 重定向事故产物
+nul
+
+# 比赛材料（不随开源仓库分发）
+submission/
+DM_*.pdf
 
 # 环境变量
 .env

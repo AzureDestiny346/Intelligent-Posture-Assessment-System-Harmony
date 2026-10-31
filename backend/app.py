@@ -55,6 +55,8 @@ class RateLimiter:
         self._requests: dict[str, list[float]] = defaultdict(list)
         self._lock = Lock()
 
+    MAX_KEYS = 4096  # 键数上限：超过才触发过期键清扫（摊销 O(1)，防伪造源地址撑爆内存）
+
     def is_allowed(self, client_ip: str) -> bool:
         now = time.time()
         with self._lock:
@@ -65,7 +67,19 @@ class RateLimiter:
                 return False
             recent.append(now)
             self._requests[client_ip] = recent
+            self._sweep_if_needed(now)
             return True
+
+    def _sweep_if_needed(self, now: float) -> None:
+        """键数超上限时删除窗口外过期键，防止伪造源地址使键集合无界增长。"""
+        if len(self._requests) <= self.MAX_KEYS:
+            return
+        expired = [
+            ip for ip, stamps in self._requests.items()
+            if not stamps or now - stamps[-1] >= self.window_seconds
+        ]
+        for ip in expired:
+            del self._requests[ip]
 
 
 rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
@@ -121,6 +135,9 @@ METRIC_LABELS = {
     "forward_head": "头前伸",
     "round_shoulder": "圆肩",
     "spinal_asymmetry": "脊柱侧弯趋势",
+    "elbow_asymmetry": "肘关节对称",
+    "leg_length_diff": "长短腿",
+    "knee_hyperextension": "膝盖超伸",
 }
 
 
@@ -137,8 +154,7 @@ def _fallback_full_content(metrics: dict) -> dict:
     """AI 调用失败时的完整兜底内容。"""
     score = metrics.get("overall_score", "未知")
     problem_metrics = []
-    for key in ("high_low_shoulder", "pelvic_lateral_tilt", "pelvic_anterior_tilt",
-                "forward_head", "round_shoulder", "spinal_asymmetry"):
+    for key in METRIC_LABELS:
         data = metrics.get(key)
         if isinstance(data, dict) and data.get("value") not in ("无明显异常", None, "unknown"):
             label = METRIC_LABELS.get(key, key)
@@ -187,17 +203,9 @@ def _fallback_full_content(metrics: dict) -> dict:
 
 
 def _build_radar_data(metrics: dict) -> list[dict]:
-    """从已有指标构造雷达图数据（包含前端 METRIC_DEFS 对应的 6 项）。"""
-    radar_metrics = [
-        ("high_low_shoulder", "高低肩"),
-        ("pelvic_lateral_tilt", "骨盆侧倾"),
-        ("pelvic_anterior_tilt", "骨盆前倾"),
-        ("forward_head", "头前伸"),
-        ("round_shoulder", "圆肩"),
-        ("spinal_asymmetry", "脊柱侧弯趋势"),
-    ]
+    """从已有指标构造雷达图数据（9 项，键序与 METRIC_LABELS 保持一致）。"""
     result = []
-    for key, label in radar_metrics:
+    for key, label in METRIC_LABELS.items():
         m = metrics.get(key, {})
         value = m.get("value", "unknown")
         score = SEVERITY_SCORES.get(value)
@@ -242,6 +250,21 @@ _HEALTH_RISK_TABLE = {
         "轻度": ("胸肌紧张", "圆肩导致胸肌缩短，建议多做扩胸运动"),
         "中度": ("肩关节问题", "圆肩可能引发肩峰撞击综合征"),
         "重度": ("胸廓变形", "重度圆肩可能影响呼吸功能和上肢活动"),
+    },
+    "elbow_asymmetry": {
+        "轻度": ("上肢不对称", "轻度肘关节不对称可能由单侧用力习惯导致"),
+        "中度": ("肩颈代偿风险", "明显的肘关节不对称可能引发肩颈代偿性问题"),
+        "重度": ("上肢功能异常", "重度不对称需排查神经或骨骼问题"),
+    },
+    "leg_length_diff": {
+        "轻度": ("步态不对称", "轻度长短腿可能影响步态，建议鞋垫矫正"),
+        "中度": ("骨盆代偿", "中度长短腿可能导致骨盆倾斜和腰痛"),
+        "重度": ("脊柱侧弯风险", "重度长短腿需就医评估，可能导致脊柱侧弯"),
+    },
+    "knee_hyperextension": {
+        "轻度": ("膝关节压力", "轻度膝盖超伸增加关节磨损，注意站姿"),
+        "中度": ("韧带松弛风险", "中度超伸可能导致膝关节不稳定"),
+        "重度": ("膝关节损伤", "重度超伸需专业评估，可能影响运动功能"),
     },
 }
 
@@ -451,7 +474,6 @@ def health():
     return jsonify({
         "status": "ok",
         "timestamp": int(time.time()),
-        "uploads_dir": UPLOAD_FOLDER,
         "upload_count": len(os.listdir(UPLOAD_FOLDER)) if os.path.isdir(UPLOAD_FOLDER) else 0,
     })
 

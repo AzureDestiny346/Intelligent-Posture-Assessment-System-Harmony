@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "智能体态评估系统架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-path",
+        "label": "主链路",
+        "focus": [
+          "app",
+          "ratelimit",
+          "flask",
+          "glm"
+        ],
+        "note": "上传请求经限流进入 Flask，几何评分完成后由 GLM-4 生成建议。"
+      },
+      {
+        "id": "vision-pipeline",
+        "label": "视觉分析",
+        "focus": [
+          "flask",
+          "pool",
+          "pose",
+          "mediapipe"
+        ],
+        "note": "ThreadPoolExecutor 并行分析三张照片，MediaPipe 只取 6 个关键点。"
+      },
+      {
+        "id": "client-side",
+        "label": "客户端",
+        "focus": [
+          "app",
+          "prefs"
+        ],
+        "note": "ArkTS 三页面采集与报告展示，历史记录仅存本地。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "frontend",
+      "label": "HarmonyOS App",
+      "sublabel": "ArkTS 三页面",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        160,
+        76
+      ],
+      "tag": "API 12"
+    },
+    {
+      "id": "prefs",
+      "type": "database",
+      "label": "PreferencesUtil",
+      "sublabel": "本地历史 KV",
+      "pos": [
+        40,
+        380
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "ratelimit",
+      "type": "security",
+      "label": "滑动窗口限流",
+      "sublabel": "10 次/分/IP",
+      "pos": [
+        300,
+        80
+      ],
+      "size": [
+        150,
+        76
+      ]
+    },
+    {
+      "id": "flask",
+      "type": "backend",
+      "label": "Flask app.py",
+      "sublabel": "POST /upload",
+      "pos": [
+        580,
+        80
+      ],
+      "size": [
+        160,
+        76
+      ],
+      "tag": "核心入口"
+    },
+    {
+      "id": "glm",
+      "type": "cloud",
+      "label": "智谱 GLM-4-Flash",
+      "sublabel": "建议生成",
+      "pos": [
+        870,
+        80
+      ],
+      "size": [
+        160,
+        76
+      ],
+      "tag": "30s 超时容错"
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "uploads/",
+      "sublabel": "暂存原图 · 24h 清理",
+      "pos": [
+        300,
+        380
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "pool",
+      "type": "backend",
+      "label": "ThreadPoolExecutor",
+      "sublabel": "三视图并行分析",
+      "pos": [
+        580,
+        380
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "pose",
+      "type": "backend",
+      "label": "pose_metrics.py",
+      "sublabel": "6 项几何指标",
+      "pos": [
+        820,
+        380
+      ],
+      "size": [
+        160,
+        60
+      ]
+    },
+    {
+      "id": "mediapipe",
+      "type": "external",
+      "label": "MediaPipe Pose",
+      "sublabel": "6 关键点推理",
+      "pos": [
+        1050,
+        380
+      ],
+      "size": [
+        160,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "HarmonyOS 设备",
+      "wraps": [
+        "app",
+        "prefs"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Flask 后端（工程文件/titaifenxi）",
+      "wraps": [
+        "ratelimit",
+        "flask",
+        "storage",
+        "pool",
+        "pose",
+        "mediapipe"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "app-upload",
+      "from": "app",
+      "to": "ratelimit",
+      "label": "上传 3 张照片",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rate-pass",
+      "from": "ratelimit",
+      "to": "flask",
+      "label": "10 req/min/IP",
+      "variant": "security"
+    },
+    {
+      "id": "flask-glm",
+      "from": "flask",
+      "to": "glm",
+      "label": "生成建议",
+      "variant": "emphasis"
+    },
+    {
+      "id": "flask-store",
+      "from": "flask",
+      "to": "storage",
+      "label": "暂存原图",
+      "variant": "dashed"
+    },
+    {
+      "id": "flask-pool",
+      "from": "flask",
+      "to": "pool",
+      "label": "并行 ×3",
+      "labelDy": 24
+    },
+    {
+      "id": "pool-pose",
+      "from": "pool",
+      "to": "pose",
+      "label": "逐张分析"
+    },
+    {
+      "id": "pose-mp",
+      "from": "pose",
+      "to": "mediapipe"
+    },
+    {
+      "id": "app-prefs",
+      "from": "app",
+      "to": "prefs",
+      "label": "保存历史",
+      "variant": "dashed",
+      "labelDy": 24
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "主链路",
+      "items": [
+        "App 上传三视图照片，限流后进入 Flask",
+        "几何评分（确定性）与 AI 建议（生成性）各取所长",
+        "总耗时约等于最慢一张照片"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "算法设计",
+      "items": [
+        "只用耳/肩/髋 6 个关键点，visibility>0.5 过滤不可靠点",
+        "高低肩/骨盆侧倾/骨盆前倾/头前伸/圆肩/脊柱侧弯 6 项阈值分级",
+        "三张照片 ThreadPoolExecutor 并行处理"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "容错与安全",
+      "items": [
+        "滑动窗口限流 10 次/分钟/IP",
+        "AI 三层容错：30s 超时 → 正则提取 JSON → 硬编码默认建议",
+        "上传文件 24 小时后自动清理"
+      ]
+    }
+  ]
+}
