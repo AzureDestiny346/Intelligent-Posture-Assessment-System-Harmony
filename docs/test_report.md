@@ -8,7 +8,7 @@
 | 系统版本 | HarmonyOS NEXT 5.0 |
 | 开发工具 | DevEco Studio 5.0，hvigor 构建工具链 |
 | 后端服务 | Flask 3.x，Python 3.11，部署于 `http://10.0.2.2:5000` |
-| 后端依赖 | MediaPipe（6 关键点检测）、智谱 GLM-4-Flash、werkzeug、dotenv |
+| 后端依赖 | MediaPipe（13 关键点检测）、智谱 GLM-4-Flash、werkzeug、dotenv |
 | App 安装包 | HAP 包，entry 模块 |
 | 测试图片 | 正面/侧面/背面三视图 JPG 图片，分辨率 ≤1920px，文件大小 <32MB |
 | 网络环境 | 模拟器与后端同局域网，通过 `10.0.2.2` 访问宿主机 |

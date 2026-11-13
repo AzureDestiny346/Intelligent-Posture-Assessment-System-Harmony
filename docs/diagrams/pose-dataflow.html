@@ -5049,7 +5049,7 @@
         <path data-edge-from="capture" data-edge-to="upload" data-edge-label="3 张照片" data-edge-key="0" data-edge-id="capture-upload" data-composition-points="156,271;259,271" d="M 156 271 L 259 271" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="upload" data-edge-to="tmpstore" data-edge-label="暂存原图" data-edge-key="1" data-edge-id="upload-tmp" data-composition-points="371,271;422.5,271;422.5,499;474,499" d="M 371 271 L 422.5 271 L 422.5 499 L 474 499" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="upload" data-edge-to="pipeline" data-edge-label="multipart 文件" data-edge-key="2" data-edge-id="upload-pipeline" data-composition-points="371,271;474,271" d="M 371 271 L 474 271" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="pipeline" data-edge-to="metrics" data-edge-label="6 关键点 → 6 项指标" data-edge-key="3" data-edge-id="pipeline-metrics" data-composition-points="586,271;637.5,271;637.5,385;689,385" d="M 586 271 L 637.5 271 L 637.5 385 L 689 385" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="pipeline" data-edge-to="metrics" data-edge-label="13 关键点 → 9 项指标" data-edge-key="3" data-edge-id="pipeline-metrics" data-composition-points="586,271;637.5,271;637.5,385;689,385" d="M 586 271 L 637.5 271 L 637.5 385 L 689 385" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="metrics" data-edge-to="glm" data-edge-label="指标 JSON" data-edge-key="4" data-edge-id="metrics-glm" data-composition-points="745,356;745,186" d="M 745 356 L 745 186" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="metrics" data-edge-to="result" data-edge-label="analysis JSON" data-edge-key="5" data-edge-id="metrics-result" data-composition-points="801,385;852.5,385;852.5,278;904,278" d="M 801 385 L 852.5 385 L 852.5 278 L 904 278" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="glm" data-edge-to="result" data-edge-label="3 条改善建议" data-edge-key="6" data-edge-id="glm-result" data-composition-points="801,157;852.5,157;852.5,264;904,264" d="M 801 157 L 852.5 157 L 852.5 264 L 904 264" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
@@ -5096,8 +5096,8 @@
         <text data-detail="fine" x="530" y="517" class="t-database" font-size="7" text-anchor="middle">24h 清理</text>
         </g>
 
-        <g id="node-pipeline" data-node-id="pipeline" data-node-label="并行几何分析" tabindex="0" role="button" aria-label="聚焦并行几何分析，MediaPipe ×3 线程, 03 / 分析" aria-pressed="false" data-node-kind="backend" data-node-sublabel="MediaPipe ×3 线程" data-node-tag="6 关键点" data-node-context="03 / 分析">
-          <title>并行几何分析 · MediaPipe ×3 线程 · 03 / 分析 · 6 关键点</title>
+        <g id="node-pipeline" data-node-id="pipeline" data-node-label="并行几何分析" tabindex="0" role="button" aria-label="聚焦并行几何分析，MediaPipe ×3 线程, 03 / 分析" aria-pressed="false" data-node-kind="backend" data-node-sublabel="MediaPipe ×3 线程" data-node-tag="13 关键点" data-node-context="03 / 分析">
+          <title>并行几何分析 · MediaPipe ×3 线程 · 03 / 分析 · 13 关键点</title>
           <rect x="474" y="242" width="112" height="58" rx="6" class="c-mask"/>
           <rect x="474" y="242" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(480 248) scale(0.6875)">
@@ -5105,18 +5105,18 @@
           </g>
           <text data-node-label="" data-detail-anchor="" x="530" y="263" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">并行几何分析</text>
           <text data-detail="context" x="530" y="279" class="t-muted" font-size="7" text-anchor="middle">MediaPipe ×3 线程</text>
-        <text data-detail="fine" x="530" y="289" class="t-backend" font-size="7" text-anchor="middle">6 关键点</text>
+        <text data-detail="fine" x="530" y="289" class="t-backend" font-size="7" text-anchor="middle">13 关键点</text>
         </g>
 
-        <g id="node-metrics" data-node-id="metrics" data-node-label="指标汇总" tabindex="0" role="button" aria-label="聚焦指标汇总，6 项指标 + 总分, 04 / 生成" aria-pressed="false" data-node-kind="backend" data-node-sublabel="6 项指标 + 总分" data-node-tag="阈值分级" data-node-context="04 / 生成">
-          <title>指标汇总 · 6 项指标 + 总分 · 04 / 生成 · 阈值分级</title>
+        <g id="node-metrics" data-node-id="metrics" data-node-label="指标汇总" tabindex="0" role="button" aria-label="聚焦指标汇总，9 项指标 + 总分, 04 / 生成" aria-pressed="false" data-node-kind="backend" data-node-sublabel="9 项指标 + 总分" data-node-tag="阈值分级" data-node-context="04 / 生成">
+          <title>指标汇总 · 9 项指标 + 总分 · 04 / 生成 · 阈值分级</title>
           <rect x="689" y="356" width="112" height="58" rx="6" class="c-mask"/>
           <rect x="689" y="356" width="112" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(695 362) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="745" y="377" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">指标汇总</text>
-          <text data-detail="context" x="745" y="393" class="t-muted" font-size="7" text-anchor="middle">6 项指标 + 总分</text>
+          <text data-detail="context" x="745" y="393" class="t-muted" font-size="7" text-anchor="middle">9 项指标 + 总分</text>
         <text data-detail="fine" x="745" y="403" class="t-backend" font-size="7" text-anchor="middle">阈值分级</text>
         </g>
 
@@ -5175,9 +5175,9 @@
           <text x="467.5" y="314" class="t-backend" font-size="8" text-anchor="middle">multipart 文件</text>
         <text data-detail="fine" x="467.5" y="325" class="t-dim" font-size="7" text-anchor="middle">每视图一线程</text>
         </g>
-        <g data-detail="context" data-edge-from="pipeline" data-edge-to="metrics" data-edge-label="6 关键点 → 6 项指标" data-edge-key="3" data-edge-id="pipeline-metrics">
+        <g data-detail="context" data-edge-from="pipeline" data-edge-to="metrics" data-edge-label="13 关键点 → 9 项指标" data-edge-key="3" data-edge-id="pipeline-metrics">
           <rect x="584.95" y="307" width="105.1" height="27" rx="4" class="c-mask"/>
-          <text x="637.5" y="318" class="t-backend" font-size="8" text-anchor="middle">6 关键点 → 6 项指标</text>
+          <text x="637.5" y="318" class="t-backend" font-size="8" text-anchor="middle">13 关键点 → 9 项指标</text>
         <text data-detail="fine" x="637.5" y="329" class="t-dim" font-size="7" text-anchor="middle">几何算法</text>
         </g>
         <g data-detail="context" data-edge-from="metrics" data-edge-to="glm" data-edge-label="指标 JSON" data-edge-key="4" data-edge-id="metrics-glm">
@@ -5413,7 +5413,7 @@
           <h3>热路径</h3>
         </div>
         <ul>
-          <li>&bull; 三张照片并行送入 MediaPipe，只提取耳/肩/髋 6 个关键点</li>
+          <li>&bull; 三张照片并行送入 MediaPipe，提取鼻/耳/肩/髋/肘/膝/踝 13 个关键点</li>
           <li>&bull; 几何阈值分级给出确定性评分，总耗时约等于最慢一张</li>
         </ul>
       </div>

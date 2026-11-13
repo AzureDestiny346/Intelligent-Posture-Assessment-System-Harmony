@@ -78,7 +78,7 @@ HarmonyOS Index
 
 后端 `METRIC_LABELS`、雷达图构造、ArkTS `AnalysisResult`、`METRIC_DEFS` 和 `ResultPage` 的解析逻辑共同定义返回协议。新增或改名指标时必须同步这些位置，并更新 `backend/test_upload_fields.py`。
 
-当前历史测试和 `ResultPage.parseAnalysisResult()` 仍按旧的 6 项展示契约编写；后端与 `AnalysisResult` 已扩展为 9 项。修改报告协议前先统一该差异，避免“后端返回但页面未展示”的静默丢失。
+2026-10-31 起该契约已全链路统一为 9 项（后端 `METRIC_LABELS`/`_build_radar_data`、ArkTS `AnalysisResult`/`METRIC_DEFS`/`ResultPage.parseAnalysisResult`、`test_upload_fields.py`）。历史记录中旧 6 项快照的指标缺失属预期；再次修改报告协议时仍须全链路同步这些位置，避免“后端返回但页面未展示”的静默丢失。
 
 ## 客户端边界
 

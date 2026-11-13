@@ -26,7 +26,7 @@
           "pose",
           "mediapipe"
         ],
-        "note": "ThreadPoolExecutor 并行分析三张照片，MediaPipe 只取 6 个关键点。"
+        "note": "ThreadPoolExecutor 并行分析三张照片，MediaPipe 取 13 个关键点。"
       },
       {
         "id": "client-side",
@@ -145,7 +145,7 @@
       "id": "pose",
       "type": "backend",
       "label": "pose_metrics.py",
-      "sublabel": "6 项几何指标",
+      "sublabel": "9 项几何指标",
       "pos": [
         820,
         380
@@ -159,7 +159,7 @@
       "id": "mediapipe",
       "type": "external",
       "label": "MediaPipe Pose",
-      "sublabel": "6 关键点推理",
+      "sublabel": "13 关键点推理",
       "pos": [
         1050,
         380
@@ -262,8 +262,8 @@
       "dot": "emerald",
       "title": "算法设计",
       "items": [
-        "只用耳/肩/髋 6 个关键点，visibility>0.5 过滤不可靠点",
-        "高低肩/骨盆侧倾/骨盆前倾/头前伸/圆肩/脊柱侧弯 6 项阈值分级",
+        "用鼻/耳/肩/髋/肘/膝/踝 13 个关键点，visibility>0.5 过滤不可靠点",
+        "高低肩/骨盆侧倾/骨盆前倾/头前伸/圆肩/脊柱侧弯/肘关节对称/长短腿/膝盖超伸 9 项阈值分级",
         "三张照片 ThreadPoolExecutor 并行处理"
       ]
     },
